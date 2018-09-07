@@ -16,8 +16,53 @@ n_row <- nrow(d_train)
 
 lbs <- d_train[, 2]
 
-# 1. Find prior
+d_train_fitted <- data.frame(matrix(0L, nrow = n_row, ncol = 401))
+dim(d_train_fitted)
+for (i in 1:n_row) {
+    img_1d <- d_train[i, 3:n_col]
+    img_2d <- matrix(0L, nrow = 28, ncol = 28)
+    min_h <- 28
+    max_h <- 0
+    min_w <- 28
+    max_w <- 0
+    for (x in 1:28) {
+        for(y in 1:28) {
+            idx <- x + 28*(y - 1)
+            pix <- img_1d[1, idx]
+            img_2d[x, y] <- pix
+            if (pix != 0) {
+                if (x < min_w)
+                    min_w <- x
+                if (x > max_w)
+                    max_w <- x
+                if (y < min_h)
+                    min_h <- y
+                if (y > max_h)
+                    max_h <- y
+            }
+        }
+    }
+    img_2d_shrink <- img_2d[min_w:max_w, min_h:max_h]
+    img_2d_fitted <- resize(img_2d_shrink, w = 20, h = 20)
+    d_train_fitted[i, 1] <- lbs[i]
+    for (x in 1:20) {
+        for (y in 1:20) {
+            idx <- x + 20*(y - 1)
+            d_train_fitted[i, idx + 1] <- img_2d_fitted[x, y]
+        }
+    }
+}
+test_img <- matrix(0L, nrow = 20, ncol = 20)
+for (x in 1:20) {
+    for(y in 1:20) {
+        idx <- x + 20*(y - 1) + 1
+        pix <- d_train_fitted[1, idx]
+        test_img[x, y] <- pix
+    }
+}
+display(test_img)
 
+# 1. Find prior
 priors <- matrix(0L, nrow = 10, ncol = 1)
 counts <- matrix(0L, nrow = 10, ncol = 1)
 for (i in 1:n_row) {

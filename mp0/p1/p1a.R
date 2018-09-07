@@ -6,7 +6,7 @@ n_row_total <- nrow(d_train_all)
 
 accuracy <- matrix(ncol = 1, nrow = 10)
 
-for (t in 1:100) {
+for (t in 1:10) {
   
   train_idx <- createDataPartition(d_train_all$X1, p = 0.8, list = FALSE, times = 1)
   

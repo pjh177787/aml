@@ -1,13 +1,14 @@
 library(caret)
 set.seed(1022)
 
+thres <- 200
+
 d_test <- read.csv("test.csv")
 d_train_all <- read.csv("train.csv")
 d_val <- read.csv("val.csv")
 
-train_idx <- createDataPartition(d_train_all$X, p = 0.05, list = FALSE, times = 1)
+train_idx <- createDataPartition(d_train_all$X, p = 1, list = FALSE, times = 1)
 
-d_test <- d_train_all[ -train_idx,]
 d_train <- d_train_all[train_idx,]
 
 n_col <- ncol(d_train)
@@ -17,30 +18,185 @@ lbs <- d_train[, 2]
 
 # 1. Find prior
 
-priors <- matrix(0L, ncol = 1, nrow = 10)
-counts <- matrix(0L, ncol = 1, nrow = 10)
+priors <- matrix(0L, nrow = 10, ncol = 1)
+counts <- matrix(0L, nrow = 10, ncol = 1)
 for (i in 1:n_row) {
-    lb <- lbs[i] - 1
+    lb <- lbs[i] + 1
     counts[lb] <- counts[lb] + 1
 }
 priors <- counts/n_row
 
-means <- matrix(0L, ncol = n_col - 2, nrow = 10)
-stddv <- matrix(0L, ncol = n_col - 2, nrow = 10)
-berp0 <- matrix(0L, ncol = n_col - 2, nrow = 10)
-berp1 <- matrix(0L, ncol = n_col - 2, nrow = 10)
+# 2. Find likelyhood
+means <- matrix(0L, nrow = 10, ncol = n_col)
+stddv <- matrix(0L, nrow = 10, ncol = n_col)
+bern1 <- matrix(0L, nrow = 10, ncol = n_col)
 
-feats <- matrix(0L, ncol = n_col - 2, nrow = 10)
-for (i in 1:n_row) {
+for (i in 3:n_col) {
+    feat_0 <- matrix(0L, nrow = counts[1], ncol = 2)
+    feat_1 <- matrix(0L, nrow = counts[2], ncol = 2)
+    feat_2 <- matrix(0L, nrow = counts[3], ncol = 2)
+    feat_3 <- matrix(0L, nrow = counts[4], ncol = 2)
+    feat_4 <- matrix(0L, nrow = counts[5], ncol = 2)
+    feat_5 <- matrix(0L, nrow = counts[6], ncol = 2)
+    feat_6 <- matrix(0L, nrow = counts[7], ncol = 2)
+    feat_7 <- matrix(0L, nrow = counts[8], ncol = 2)
+    feat_8 <- matrix(0L, nrow = counts[9], ncol = 2)
+    feat_9 <- matrix(0L, nrow = counts[10], ncol = 2)
+    nums <- matrix(0L, nrow = 10, ncol = 1)
+    for (j in 1:n_row) {
+        entry = d_train[j, i]
+        # if (entry > thres)
+        #     entry = entry + 500
+        if (lbs[j] == 0) {
+            nums[1] <- nums[1] + 1
+            n <- nums[1]
+            if (entry > thres) {
+                feat_0[n, 1] <- entry
+                feat_0[n, 2] <- 1
+            }
+        } else if (lbs[j] == 1) {
+            nums[2] <- nums[2] + 1
+            n <- nums[2]
+            if (entry > thres) {
+                feat_1[n, 1] <- entry
+                feat_1[n, 2] <- 1
+            }
+        } else if (lbs[j] == 2) {
+            nums[3] <- nums[3] + 1
+            n <- nums[3]
+            if (entry > thres) {
+                feat_2[n, 1] <- entry
+                feat_2[n, 2] <- 1
+            }
+        } else if (lbs[j] == 3) {
+            nums[4] <- nums[4] + 1
+            n <- nums[4]
+            if (entry > thres) {
+                feat_3[n, 1] <- entry
+                feat_3[n, 2] <- 1
+            }
+        } else if (lbs[j] == 4) {
+            nums[5] <- nums[5] + 1
+            n <- nums[5]
+            if (entry > thres) {
+                feat_4[n, 1] <- entry
+                feat_4[n, 2] <- 1
+            }
+        } else if (lbs[j] == 5) {
+            nums[6] <- nums[6] + 1
+            n <- nums[6]
+            if (entry > thres) {
+                feat_5[n, 1] <- entry
+                feat_5[n, 2] <- 1
+            }
+        } else if (lbs[j] == 6) {
+            nums[7] <- nums[7] + 1
+            n <- nums[7]
+            if (entry > thres) {
+                feat_6[n, 1] <- entry
+                feat_6[n, 2] <- 1
+            }
+        } else if (lbs[j] == 7) {
+            nums[8] <- nums[8] + 1
+            n <- nums[8]
+            if (entry > thres) {
+                feat_7[n, 1] <- entry
+                feat_7[n, 2] <- 1
+            }
+        } else if (lbs[j] == 8) {
+            nums[9] <- nums[9] + 1
+            n <- nums[9]
+            if (entry > thres) {
+                feat_8[n, 1] <- entry
+                feat_8[n, 2] <- 1
+            }
+        } else if (lbs[j] == 9) {
+            nums[10] <- nums[10] + 1
+            n <- nums[10]
+            if (entry > thres) {
+                feat_9[n, 1] <- entry
+                feat_9[n, 2] <- 1
+            }
+        }
+    }
+    means[1, i] <- mean(feat_0[, 1])
+    means[2, i] <- mean(feat_1[, 1])
+    means[3, i] <- mean(feat_2[, 1])
+    means[4, i] <- mean(feat_3[, 1])
+    means[5, i] <- mean(feat_4[, 1])
+    means[6, i] <- mean(feat_5[, 1])
+    means[7, i] <- mean(feat_6[, 1])
+    means[8, i] <- mean(feat_7[, 1])
+    means[9, i] <- mean(feat_8[, 1])
+    means[10, i] <- mean(feat_9[, 1])
+    stddv[1, i] <- sqrt(var(feat_0[, 1]))
+    stddv[2, i] <- sqrt(var(feat_1[, 1]))
+    stddv[3, i] <- sqrt(var(feat_2[, 1]))
+    stddv[4, i] <- sqrt(var(feat_3[, 1]))
+    stddv[5, i] <- sqrt(var(feat_4[, 1]))
+    stddv[6, i] <- sqrt(var(feat_5[, 1]))
+    stddv[7, i] <- sqrt(var(feat_6[, 1]))
+    stddv[8, i] <- sqrt(var(feat_7[, 1]))
+    stddv[9, i] <- sqrt(var(feat_8[, 1]))
+    stddv[10, i] <- sqrt(var(feat_9[, 1]))
+    bern1[1, i] <- (sum(feat_0[, 2]) + 1)/counts[1]
+    bern1[2, i] <- (sum(feat_1[, 2]) + 1)/counts[2]
+    bern1[3, i] <- (sum(feat_2[, 2]) + 1)/counts[3]
+    bern1[4, i] <- (sum(feat_3[, 2]) + 1)/counts[4]
+    bern1[5, i] <- (sum(feat_4[, 2]) + 1)/counts[5]
+    bern1[6, i] <- (sum(feat_5[, 2]) + 1)/counts[6]
+    bern1[7, i] <- (sum(feat_6[, 2]) + 1)/counts[7]
+    bern1[8, i] <- (sum(feat_7[, 2]) + 1)/counts[8]
+    bern1[9, i] <- (sum(feat_8[, 2]) + 1)/counts[9]
+    bern1[10, i] <- (sum(feat_9[, 2]) + 1)/counts[10]
+}
+
+# 3. Test
+n_row_val <- nrow(d_val)
+predicts_norm <- matrix(0L, nrow = n_row_val, ncol = 1)
+predicts_bern <- matrix(0L, nrow = n_row_val, ncol = 1)
+for (i in 1:n_row_val) {
+    probs_norm <- matrix(0L, nrow = 10, ncol = 1)
+    probs_bern <- matrix(0L, nrow = 10, ncol = 1)
+    for (j in 1:10) {
+        probs_norm[j] <- log(priors[j])
+        probs_bern[j] <- log(priors[j])
+    }
     for (j in 3:n_col) {
-        lb <- lbs[i] - 1
-        r <- j - 2
-        temp <- feats[lb, r]
-        feats[lb, r] <- temp + d_train[i, j]
+        entry <- d_val[i, j-1]
+        for (k in 1:10) {
+            if (means[k, j] != 0)
+                probs_norm[k] <- probs_norm[k] + dnorm(entry, mean = means[k, j], sd = stddv[k, j], log = TRUE)
+            if (entry > thres)
+                probs_bern[k] <- probs_bern[k] + log(bern1[k, j])
+        }
+    }
+    idx_norm <- arrayInd(which.max(probs_norm), dim(probs_norm))
+    idx_bern <- arrayInd(which.max(probs_bern), dim(probs_bern))
+    predicts_norm[i] <- idx_norm[, 1] - 1
+    predicts_bern[i] <- idx_bern[, 1] - 1
+}
+
+correct_count_norm <- 0
+correct_count_bern <- 0
+confusion_mat_norm <- matrix(0L, nrow = 10, ncol = 10)
+confusion_mat_bern <- matrix(0L, nrow = 10, ncol = 10)
+for (i in 1:n_row_val) {
+    real_lb <- d_val[i, 1] + 1
+    pred_norm <- predicts_norm[i] + 1
+    pred_bern <- predicts_bern[i] + 1
+    
+    confusion_mat_norm[real_lb, pred_norm] <- confusion_mat_norm[real_lb, pred_norm] + 1
+    confusion_mat_bern[real_lb, pred_bern] <- confusion_mat_bern[real_lb, pred_bern] + 1
+    Θ
+    if (pred_norm == real_lb) {
+        correct_count_norm <- correct_count_norm + 1
+    }
+    if (pred_bern == real_lb) {
+        correct_count_bern <- correct_count_bern + 1
     }
 }
-# for (i in 1:nrow(feats)) {
-#     for (j in 1:ncol(feats)) {
-#         means[i, j] <- feats[i, j]/counts[j]
-#     }
-# }
+
+accuracy_norm  <- correct_count_norm/n_row_val
+accuracy_bern  <- correct_count_bern/n_row_val
+

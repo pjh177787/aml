@@ -31,12 +31,12 @@ for (t in 1:10) {
   prior_1 <- 1 - prior_0
   
   # 2. Find p(x|y) aka likelyhood
-  normal_param_0 <- matrix(ncol = n_col - 1, nrow =  2)
-  normal_param_1 <- matrix(ncol = n_col - 1, nrow =  2)
+  normal_param_0 <- matrix(ncol = n_col - 1, nrow = 2)
+  normal_param_1 <- matrix(ncol = n_col - 1, nrow = 2)
   
   for (i in 1:(n_col - 1) ) {
-    feat_0 <- matrix(count_0, 1)
-    feat_1 <- matrix(n_row - count_0, 1)
+    feat_0 <- matrix(ncol = 1, nrow = count_0)
+    feat_1 <- matrix(ncol = 1, nrow = n_row - count_0)
     n_0 <- 1
     n_1 <- 1
     for (j in 1:n_row) {

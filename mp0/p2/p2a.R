@@ -1,4 +1,6 @@
 library(caret)
+library(EBImage)
+
 set.seed(1022)
 
 thres <- 200
@@ -7,7 +9,7 @@ d_test <- read.csv("test.csv")
 d_train_all <- read.csv("train.csv")
 d_val <- read.csv("val.csv")
 
-train_idx <- createDataPartition(d_train_all$X, p = 0.001, list = FALSE, times = 1)
+train_idx <- createDataPartition(d_train_all$X, p = 1, list = FALSE, times = 1)
 
 d_train <- d_train_all[train_idx,]
 
@@ -17,7 +19,6 @@ n_row <- nrow(d_train)
 lbs <- d_train[, 2]
 
 d_train_fit <- data.frame(matrix(0L, nrow = n_row, ncol = 402))
-dim(d_train_fit)
 for (i in 1:n_row) {
     img_1d <- d_train[i, 3:n_col]
     img_2d <- matrix(0L, nrow = 28, ncol = 28)
@@ -326,6 +327,44 @@ for (i in 3:n_col_fit) {
 
 # 3. Test
 n_row_val <- nrow(d_val)
+
+d_val_fit <- data.frame(matrix(0L, nrow = n_row_val, ncol = 402))
+for (i in 1:n_row) {
+    img_1d <- d_val[i, 2:ncol(d_val)]
+    img_2d <- matrix(0L, nrow = 28, ncol = 28)
+    min_h <- 28
+    max_h <- 0
+    min_w <- 28
+    max_w <- 0
+    for (x in 1:28) {
+        for(y in 1:28) {
+            idx <- x + 28*(y - 1)
+            pix <- img_1d[1, idx]
+            img_2d[x, y] <- pix
+            if (pix != 0) {
+                if (x < min_w)
+                    min_w <- x
+                if (x > max_w)
+                    max_w <- x
+                if (y < min_h)
+                    min_h <- y
+                if (y > max_h)
+                    max_h <- y
+            }
+        }
+    }
+    img_2d_shrink <- img_2d[min_w:max_w, min_h:max_h]
+    img_2d_fitted <- resize(img_2d_shrink, w = 20, h = 20)
+    d_val_fit[i, 1] <- d_val[i, 1]
+    for (x in 1:20) {
+        for (y in 1:20) {
+            idx <- x + 20*(y - 1)
+            d_val_fit[i, idx + 1] <- img_2d_fitted[x, y]
+        }
+    }
+}
+n_col_fit <- ncol(d_val_fit)
+
 predicts_norm <- matrix(0L, nrow = n_row_val, ncol = 1)
 predicts_bern <- matrix(0L, nrow = n_row_val, ncol = 1)
 for (i in 1:n_row_val) {
@@ -359,10 +398,10 @@ for (i in 1:n_row_val) {
         probs_norm[j] <- log(priors[j])
         probs_bern[j] <- log(priors[j])
     }
-    for (j in 3:n_col_) {
-        entry <- d_val[i, j-1]
+    for (j in 3:n_col_fit) {
+        entry <- d_val_fit[i, j-1]
         for (k in 1:10) {
-            if (means[k, j] != 0)
+            if (means_fit[k, j] != 0)
                 probs_norm[k] <- probs_norm[k] + dnorm(entry, mean = means_fit[k, j], sd = stddv_fit[k, j], log = TRUE)
             if (entry > thres)
                 probs_bern[k] <- probs_bern[k] + log(bern1_fit[k, j])
@@ -384,6 +423,7 @@ confusion_mat_norm_fit <- matrix(0L, nrow = 10, ncol = 10)
 confusion_mat_bern_fit <- matrix(0L, nrow = 10, ncol = 10)
 for (i in 1:n_row_val) {
     real_lb <- d_val[i, 1] + 1
+    
     pred_norm <- predicts_norm[i] + 1
     pred_bern <- predicts_bern[i] + 1
     pred_norm_fit <- predicts_norm_fit[i] + 1

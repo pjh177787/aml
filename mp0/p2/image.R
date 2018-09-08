@@ -1,4 +1,4 @@
-library("EBImage")
+library(EBImage)
 
 # x <- readImage("sample.png")
 # 

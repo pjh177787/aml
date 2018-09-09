@@ -24,7 +24,7 @@ n_row <- nrow(d_train)
 lbs <- d_train[, 2] # Labels
 
 d_train_fit <- fit_img(d_train)
-n_col_fit <- ncol(d_train_fit)
+d_val_fit <- fit_img(d_val)
 
 priors <- matrix(0L, nrow = 10, ncol = 1)
 counts <- matrix(0L, nrow = 10, ncol = 1)
@@ -36,9 +36,6 @@ priors <- counts/n_row
 
 params <- train(d_train, counts, thres)
 params_fit <- train(d_train_fit, counts, thres)
-
-n_row_val <- nrow(d_val)
-d_val_fit <- fit_img(d_val)
 
 preds <- pred(d_val, priors, params, thres)
 preds_fit <- pred(d_val_fit, priors, params_fit, thres)

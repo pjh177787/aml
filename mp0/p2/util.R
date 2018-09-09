@@ -230,8 +230,8 @@ rb_train <- function(data_t, data_v, n_tree, n_level) {
     x <- data_t[, 3:ncol(data_t)]
     y <- data_t[, 2]
     rb <- Rborist(x, y, nTree = n_tree, nLevel = n_level)
-    z <- data_v[, 2:ncol(data_v)]
-    true <- data_v[, 1]
+    z <- data_v[, 3:ncol(data_v)]
+    true <- data_v[, 2]
     pred <- predict(rb, z)
     y_pred <- pred$yPred
     y_pred_r <- round(y_pred, digits = 0)

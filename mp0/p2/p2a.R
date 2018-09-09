@@ -329,7 +329,7 @@ for (i in 3:n_col_fit) {
 n_row_val <- nrow(d_val)
 
 d_val_fit <- data.frame(matrix(0L, nrow = n_row_val, ncol = 402))
-for (i in 1:n_row) {
+for (i in 1:n_row_val) {
     img_1d <- d_val[i, 2:ncol(d_val)]
     img_2d <- matrix(0L, nrow = 28, ncol = 28)
     min_h <- 28

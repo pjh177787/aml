@@ -2,59 +2,63 @@ library(caret)
 library(EBImage)
 
 set.seed(1022)
-
 thres <- 200
 
 d_test <- read.csv("test.csv")
 d_train_all <- read.csv("train.csv")
-d_val <- read.csv("val.csv")
+d_val_all <- read.csv("val.csv")
+d_val_temp <- data.frame(matrix(0L, nrow = nrow(d_val_all), ncol = ncol(d_val_all) + 1))
+d_val_temp[, 2:ncol(d_val_temp)] <- d_val_all
+d_val_all <- d_val_temp
 
-train_idx <- createDataPartition(d_train_all$X, p = 0.01, list = FALSE, times = 1)
+source("util.r")
 
+train_idx <- createDataPartition(d_train_all$X, p = 1, list = FALSE, times = 1)
 d_train <- d_train_all[train_idx,]
+val_idx <- createDataPartition(d_val_all$X2, p = 1, list = FALSE, times = 1)
+d_val <- d_val_all[val_idx,]
 
 n_col <- ncol(d_train)
 n_row <- nrow(d_train)
 
-lbs <- d_train[, 2]
+lbs <- d_train[, 2] # Labels
 
-d_train_fit <- data.frame(matrix(0L, nrow = n_row, ncol = 402))
-for (i in 1:n_row) {
-    img_1d <- d_train[i, 3:n_col]
-    img_2d <- matrix(0L, nrow = 28, ncol = 28)
-    min_h <- 28
-    max_h <- 0
-    min_w <- 28
-    max_w <- 0
-    for (x in 1:28) {
-        for(y in 1:28) {
-            idx <- x + 28*(y - 1)
-            pix <- img_1d[1, idx]
-            img_2d[x, y] <- pix
-            if (pix != 0) {
-                if (x < min_w)
-                    min_w <- x
-                if (x > max_w)
-                    max_w <- x
-                if (y < min_h)
-                    min_h <- y
-                if (y > max_h)
-                    max_h <- y
-            }
-        }
-    }
-    img_2d_shrink <- img_2d[min_w:max_w, min_h:max_h]
-    img_2d_fitted <- resize(img_2d_shrink, w = 20, h = 20)
-    d_train_fit[i, 1] <- d_train[i, 1]
-    d_train_fit[i, 2] <- d_train[i, 2]
-    for (x in 1:20) {
-        for (y in 1:20) {
-            idx <- x + 20*(y - 1)
-            d_train_fit[i, idx + 2] <- img_2d_fitted[x, y]
-        }
-    }
-}
-
+d_train_fit <- fit_img(d_train)
 n_col_fit <- ncol(d_train_fit)
 
+priors <- matrix(0L, nrow = 10, ncol = 1)
+counts <- matrix(0L, nrow = 10, ncol = 1)
+for (i in 1:n_row) {
+    lb <- lbs[i] + 1
+    counts[lb] <- counts[lb] + 1
+}
+priors <- counts/n_row
+
+params <- train(d_train, counts, thres)
+params_fit <- train(d_train_fit, counts, thres)
+
+n_row_val <- nrow(d_val)
+d_val_fit <- fit_img(d_val)
+
+preds <- pred(d_val, priors, params, thres)
+preds_fit <- pred(d_val_fit, priors, params_fit, thres)
+
+preds_norm <- matrix(unlist(preds[1]), ncol = 1, byrow = TRUE)
+preds_bern <- matrix(unlist(preds[2]), ncol = 1, byrow = TRUE)
+preds_norm_fit <- matrix(unlist(preds_fit[1]), ncol = 1, byrow = TRUE)
+preds_bern_fit <- matrix(unlist(preds_fit[2]), ncol = 1, byrow = TRUE)
+
+res_norm <- report(d_val[, 2], preds_norm)
+res_bern <- report(d_val[, 2], preds_bern)
+res_norm_fit <- report(d_val[, 2], preds_norm_fit)
+res_bern_fit <- report(d_val[, 2], preds_bern_fit)
+
+confs_norm <- matrix(unlist(res_norm[1]), ncol = 10, byrow = TRUE)
+confs_bern <- matrix(unlist(res_bern[1]), ncol = 10, byrow = TRUE)
+confs_norm_fit <- matrix(unlist(res_norm_fit[1]), ncol = 10, byrow = TRUE)
+confs_bern_fit <- matrix(unlist(res_bern_fit[1]), ncol = 10, byrow = TRUE)
+accur_norm <- unlist(res_norm[2])
+accur_bern <- unlist(res_bern[2])
+accur_norm_fit <- unlist(res_norm_fit[2])
+accur_bern_fit <- unlist(res_bern_fit[2])
 

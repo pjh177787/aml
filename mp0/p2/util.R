@@ -228,25 +228,26 @@ report <- function(truth, preds) {
 
 rb_train <- function(data_t, data_v, n_tree, n_level) {
     x <- data_t[, 3:ncol(data_t)]
-    y <- data_t[, 2]
-    rb <- Rborist(x, y, nTree = n_tree, nLevel = n_level)
+    y <- as.factor(data_t[, 2])
+    rb <- Rborist(x, y, nTree = 30, nLevel = 16)
     z <- data_v[, 3:ncol(data_v)]
-    true <- data_v[, 2]
+    true <- as.factor(data_v[, 2])
     pred <- predict(rb, z)
-    y_pred <- pred$yPred
-    y_pred_r <- round(y_pred, digits = 0)
+    y_pred <- pred$yPred - 1
+    # y_pred_r <- round(y_pred, digits = 0)
     
     correct <- 0
     confusion <- matrix(0L, nrow = 10, ncol = 10)
     for (i in 1:length(true)) {
-        lb <- true[i]
-        pd <- y_pred_r[i]
+        lb <- data_v[i, 2]
+        pd <- y_pred[i]
         confusion[lb, pd] <- confusion[lb, pd] + 1
         if (pd == lb) {
             correct <- correct + 1
         }
     }
     accuracy <- correct/length(true)
+    
     ret <- list(confusion, accuracy)
     return (ret)
 }

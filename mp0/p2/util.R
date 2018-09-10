@@ -4,44 +4,18 @@ library(EBImage)
 set.seed(1022)
 
 fit_img <- function(img) {
-    n_row = nrow(img)
-    n_col = ncol(img)
+    n_row <- nrow(img)
+    n_col <- ncol(img)
     new_img <- data.frame(matrix(0L, nrow = n_row, ncol = 402))
     
     for (i in 1:n_row){
-        img_1d <- img[i, 3:n_col]
-        img_2d <- matrix(0L, nrow = 28, ncol = 28)
-        min_h <- 28
-        max_h <- 0
-        min_w <- 28
-        max_w <- 0
-        for (x in 1:28) {
-            for(y in 1:28) {
-                idx <- x + 28*(y - 1)
-                pix <- img_1d[1, idx]
-                img_2d[x, y] <- pix
-                if (pix != 0) {
-                    if (x < min_w)
-                        min_w <- x
-                    if (x > max_w)
-                        max_w <- x
-                    if (y < min_h)
-                        min_h <- y
-                    if (y > max_h)
-                        max_h <- y
-                }
-            }
-        }
-        img_2d_shrink <- img_2d[min_w:max_w, min_h:max_h]
-        img_2d_fitted <- resize(img_2d_shrink, w = 20, h = 20)
+        img_1d <- matrix(img[i, 2:n_col], nrow = 28, ncol = 28)
+        img_1d <- img_1d[, colSums(img_1d != 0) > 0]
+        img_1d <- img_1d[rowSums(img_1d != 0) > 0, ]
+        img_2d_fitted <- resize(img_1d, w = 20, h = 20)
         new_img[i, 1] <- img[i, 1]
         new_img[i, 2] <- img[i, 2]
-        for (x in 1:20) {
-            for (y in 1:20) {
-                idx <- x + 20*(y - 1)
-                new_img[i, idx + 2] <- img_2d_fitted[x, y]
-            }
-        }
+        new_img[i, 3:ncol(new_img)] <- unlist(img_2d_fitted)
     }
     return(new_img)
 }

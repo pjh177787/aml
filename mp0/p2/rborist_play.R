@@ -21,6 +21,9 @@ d_val <- d_val_all[val_idx,]
 d_train_fit <- fit_img(d_train)
 d_val_fit <- fit_img(d_val)
 
+write.csv(d_train_fit, file = "d_train_fit.csv")
+write.csv(d_val_fit, file = "d_val_fit.csv")
+
 res_10_4 <- rb_train(d_train, d_val, 10, 4)
 confs_10_4 <- matrix(unlist(res_10_4[1]), ncol = 10, byrow = TRUE)
 accur_10_4 <- unlist(res_10_4[2])

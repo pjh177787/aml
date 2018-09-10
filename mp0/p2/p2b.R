@@ -11,7 +11,7 @@ d_val_temp <- data.frame(matrix(0L, nrow = nrow(d_val_all), ncol = ncol(d_val_al
 d_val_temp[, 2:ncol(d_val_temp)] <- d_val_all
 d_val_all <- d_val_temp
 
-source("util.r")
+source("util.R")
 
 train_idx <- createDataPartition(d_train_all$X, p = 1, list = FALSE, times = 1)
 d_train <- d_train_all[train_idx,]
@@ -25,6 +25,9 @@ lbs <- d_train[, 2] # Labels
 
 d_train_fit <- fit_img(d_train)
 d_val_fit <- fit_img(d_val)
+
+write.csv(d_train_fit, file = "d_train_fit.csv")
+write.csv(d_val_fit, file = "d_val_fit.csv")
 
 priors <- matrix(0L, nrow = 10, ncol = 1)
 counts <- matrix(0L, nrow = 10, ncol = 1)

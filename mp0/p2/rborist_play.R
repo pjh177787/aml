@@ -1,8 +1,6 @@
 library(caret)
 library(EBImage)
-
-set.seed(1022)
-thres <- 200
+library(Rborist)
 
 d_test <- read.csv("test.csv")
 d_train_all <- read.csv("train.csv")
@@ -11,7 +9,7 @@ d_val_temp <- data.frame(matrix(0L, nrow = nrow(d_val_all), ncol = ncol(d_val_al
 d_val_temp[, 2:ncol(d_val_temp)] <- d_val_all
 d_val_all <- d_val_temp
 
-source("util.r")
+source("util.R")
 
 train_idx <- createDataPartition(d_train_all$X, p = 1, list = FALSE, times = 1)
 d_train <- d_train_all[train_idx,]

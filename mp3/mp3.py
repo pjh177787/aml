@@ -48,25 +48,27 @@ mse_table = np.zeros(shape = (5, 10))
 
 for n in range(5):
     data = irises[n]
+
     mse = np.square(np.subtract(np.mean(data), data)).mean()
     mse_table[n][0] = mse
-    
     for i in range(1, 5):
         rec = reconstruct_self(data, i)
         mse = np.square(np.subtract(rec, data)).mean()
         mse_table[n][i] = mse
+
     mse = np.square(np.subtract(np.mean(iris_0), data)).mean()
     mse_table[n][5] = mse
-    
     for i in range(1, 5):
         rec = reconstruct_orig(iris_0, data, i)
         mse = np.square(np.subtract(rec, data)).mean()
         mse_table[n][i + 5] = mse
 
-iris_2_recon = np.array(reconstruct_self(iris_2))
+iris_2_recon = np.array(reconstruct_self(iris_2, 2))
+print(iris_2_recon[0])
 
 import csv
-res = [['0N', '1N', '2N', '3N', '4N', '0c', '1c', '2c', '3c', '4c']]
+# res = [['0N', '1N', '2N', '3N', '4N', '0c', '1c', '2c', '3c', '4c']]
+res = [['X0', 'X1', 'X2', 'X3', 'X4', 'X5', 'X6', 'X7', 'X8', 'X9']]
 for row in mse_table:
     res.append(row)
     
@@ -74,7 +76,8 @@ with open("jpan22-numbers.csv",'w', newline='') as resultFile:
     wr = csv.writer(resultFile)
     wr.writerows(res)
 
-res = [['Sepal.Length','Sepal.Width','Petal.Length','Petal.Width']]
+# res = [['Sepal.Length','Sepal.Width','Petal.Length','Petal.Width']]
+res = [['X0','X1','X2','X3']]
 for row in iris_2_recon:
     res.append(row)
 
